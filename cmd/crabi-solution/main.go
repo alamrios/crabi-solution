@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("failed to setup mongoDB client: %v", err)
 	}
 
-	pldService, err := pld.NewService()
+	pldService, err := pld.NewService(&cfg.PLD)
 	if err != nil {
 		log.Fatalf("failed to setup pld client: %v", err)
 	}

@@ -7,7 +7,6 @@ services:
       context: ./../../../
       dockerfile: infra/deploy/local/Dockerfile
     container_name: crabi-solution_dev
-    restart: on-failure
     depends_on:
       - crabi-pld
       - crabi-solution-mongo
@@ -17,6 +16,10 @@ services:
       MONGO_DATABASE: "crabi-solution"
       MONGO_USER: "crabiuser"
       MONGO_PASSWORD: "crabipass"
+      PLD_PROTOCOL: "http://"
+      PLD_HOST: "crabi-pld"
+      PLD_PORT: "3000"
+      PLD_URI: "/check-blacklist"
     ports:
       - "8080:8080"
     networks:
@@ -29,8 +32,6 @@ services:
       MONGO_INITDB_DATABASE: "crabi-solution"
       MONGO_INITDB_ROOT_USERNAME: "crabiuser"
       MONGO_INITDB_ROOT_PASSWORD: "crabipass"
-    volumes:
-      - /data/db
     ports:
       - "27217:27017"
     networks:
@@ -41,6 +42,8 @@ services:
     image: vligascrabi/crabi-pld-test:v1
     ports:
       - "3000:3000"
+    networks:
+      - crabi-solution
 
 networks:
   crabi-solution:

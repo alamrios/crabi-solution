@@ -46,6 +46,7 @@ type createUserRequest struct {
 	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
 	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
 	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+	Password  string `json:"password" validate:"required" example:"joaquin123"`
 }
 
 // createUser godoc
@@ -67,10 +68,12 @@ func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 		FirstName: userToCreate.FirstName,
 		LastName:  userToCreate.LastName,
 		Email:     userToCreate.Email,
+		Password:  userToCreate.Password,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
+		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(user)
 	}
 }

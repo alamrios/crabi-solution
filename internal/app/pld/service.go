@@ -11,5 +11,5 @@ type Request struct {
 }
 
 type Service interface {
-	CheckBlackList(ctx context.Context, request Request) error
+	CheckBlacklist(ctx context.Context, request Request) error
 }

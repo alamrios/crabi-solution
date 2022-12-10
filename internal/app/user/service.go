@@ -20,7 +20,7 @@ func NewService(pldService pld.Service, userRepo Repository) (*Service, error) {
 }
 
 func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
-	pldErr := s.pldService.CheckBlackList(
+	pldErr := s.pldService.CheckBlacklist(
 		ctx,
 		pld.Request{
 			FirstName: user.FirstName,
@@ -28,7 +28,16 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 			Email:     user.Email,
 		})
 	if pldErr != nil {
-		return nil, fmt.Errorf("given user found in pld blacklist")
+		return nil, pldErr
+	}
+
+	duplicate, err := s.userRepo.GetUserByEmail(ctx, user.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if duplicate != nil {
+		return nil, fmt.Errorf("user with email %s already exists", user.Email)
 	}
 
 	rErr := s.userRepo.SaveUser(ctx, user)
