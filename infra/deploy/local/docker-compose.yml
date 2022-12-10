@@ -1,0 +1,46 @@
+version: "3.3"
+
+services:
+  crabi-solution:
+    image: crabi-solution
+    build:
+      context: ./../../../
+      dockerfile: infra/deploy/local/Dockerfile
+    container_name: crabi-solution_dev
+    restart: on-failure
+    depends_on:
+      - crabi-pld
+      - crabi-solution-mongo
+    environment:
+      MONGO_PROTOCOL: "mongodb"
+      MONGO_URI: "crabi-solution-mongo:27017"
+      MONGO_DATABASE: "crabi-solution"
+      MONGO_USER: "crabiuser"
+      MONGO_PASSWORD: "crabipass"
+    ports:
+      - "8080:8080"
+    networks:
+      - crabi-solution
+
+  crabi-solution-mongo:
+    container_name: crabi-solution-mongo
+    image: mongo:4.2.0
+    environment:
+      MONGO_INITDB_DATABASE: "crabi-solution"
+      MONGO_INITDB_ROOT_USERNAME: "crabiuser"
+      MONGO_INITDB_ROOT_PASSWORD: "crabipass"
+    volumes:
+      - /data/db
+    ports:
+      - "27217:27017"
+    networks:
+      - crabi-solution
+
+  crabi-pld:
+    container_name: crabi-pld
+    image: vligascrabi/crabi-pld-test:v1
+    ports:
+      - "3000:3000"
+
+networks:
+  crabi-solution:
