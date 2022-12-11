@@ -11,6 +11,7 @@ import (
 	"github.com/alamrios/crabi-solution/config"
 )
 
+// NewClient returns conection to mongo database
 func NewClient(ctx context.Context, cfg *config.Mongo) (*mongo.Database, error) {
 	var auth string
 	if cfg.User != "" && cfg.Password != "" {

@@ -26,12 +26,14 @@ func NewService(cfg *config.PLD) (*Service, error) {
 	return service, nil
 }
 
+// CheckBlacklistRequest struct for CheckBlacklist request
 type CheckBlacklistRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 }
 
+// CheckBlacklistResponse struct for CheckBlacklist response
 type CheckBlacklistResponse struct {
 	IsInBlacklist bool `json:"is_in_blacklist"`
 }
@@ -52,6 +54,9 @@ func (s *Service) CheckBlacklist(ctx context.Context, request pld.Request) error
 	contentType := "application/json"
 	bytesBuffer := bytes.NewBuffer(jsonData)
 	response, err := http.Post(s.URL, contentType, bytesBuffer)
+	if err != nil {
+		return err
+	}
 
 	if response.StatusCode != 201 {
 		return fmt.Errorf("pld server returned %d status code", response.StatusCode)

@@ -10,12 +10,15 @@ import (
 	"github.com/alamrios/crabi-solution/internal/app/user"
 )
 
+// ResourceCollection name of mongo collection
 const ResourceCollection = "users"
 
+// Repository struct for users mongo repository
 type Repository struct {
 	mongoDB *mongo.Database
 }
 
+// New returns an instance of users mongo repository
 func New(mongoDB *mongo.Database) (*Repository, error) {
 	if mongoDB == nil {
 		return nil, fmt.Errorf("db is nil")
@@ -34,6 +37,7 @@ func (r *Repository) SaveUser(ctx context.Context, user user.User) error {
 	return err
 }
 
+// GetUserByEmail returns user in mongo collection with given email
 func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*user.User, error) {
 	collection := r.mongoDB.Collection(ResourceCollection)
 

@@ -6,11 +6,13 @@ import (
 	"os"
 )
 
+// Config struct for crabi-solution
 type Config struct {
 	Mongo Mongo
 	PLD   PLD
 }
 
+// Mongo struct for mongodb connection
 type Mongo struct {
 	Protocol string
 	URI      string
@@ -19,6 +21,7 @@ type Mongo struct {
 	Password string
 }
 
+// PLD struct for PLD service connectino
 type PLD struct {
 	Protocol string
 	Host     string
@@ -26,6 +29,7 @@ type PLD struct {
 	URI      string
 }
 
+// New returns config instance with values
 func New(ctx context.Context) (*Config, error) {
 	mongo := Mongo{
 		Protocol: os.Getenv("MONGO_PROTOCOL"),
