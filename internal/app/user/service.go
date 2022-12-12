@@ -72,6 +72,7 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 	return &user, nil
 }
 
+// Login returns user with given credentials
 func (s *Service) Login(ctx context.Context, email, password string) (*User, error) {
 	if email == "" {
 		return nil, fmt.Errorf("user's email should not be empty")
@@ -87,6 +88,24 @@ func (s *Service) Login(ctx context.Context, email, password string) (*User, err
 
 	if user == nil {
 		return nil, fmt.Errorf("user not exists or invalid credentials")
+	}
+
+	return user, nil
+}
+
+// GetUser returns user with given email
+func (s *Service) GetUser(ctx context.Context, email string) (*User, error) {
+	if email == "" {
+		return nil, fmt.Errorf("user's email should not be empty")
+	}
+
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, fmt.Errorf("user not exists")
 	}
 
 	return user, nil

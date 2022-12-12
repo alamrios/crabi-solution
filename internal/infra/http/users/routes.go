@@ -14,6 +14,7 @@ import (
 type userService interface {
 	CreateUser(ctx context.Context, user user.User) (*user.User, error)
 	Login(ctx context.Context, email, password string) (*user.User, error)
+	GetUser(ctx context.Context, email string) (*user.User, error)
 }
 
 // Router infraestructure
@@ -35,6 +36,7 @@ func New(userService userService) (*Router, error) {
 // AppendRoutes adds all func handlers
 func (h *Router) AppendRoutes(rb *mux.Router) {
 	rb.HandleFunc("/api/v1/users/", h.createUser).Methods("POST")
+	rb.HandleFunc("/api/v1/users/{email}", h.getUser).Methods("GET")
 	rb.HandleFunc("/api/v1/login/", h.login).Methods("POST")
 }
 
@@ -49,6 +51,12 @@ type createUserRequest struct {
 	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
 	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
 	Password  string `json:"password" validate:"required" example:"joaquin123"`
+}
+
+type createUserResponse struct {
+	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
+	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
+	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
 }
 
 // createUser godoc
@@ -76,8 +84,13 @@ func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
+		response := createUserResponse{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(user)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
@@ -86,11 +99,17 @@ type loginRequest struct {
 	Password string `json:"password" validate:"required" example:"joaquin123"`
 }
 
+type loginResponse struct {
+	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
+	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
+	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+}
+
 // login godoc
 // @Description User login.
 // @Param email query string false "User's email"
 // @Param password query string false "User's password"
-// @Success 200 {object} jsonapi.Response{user.User}
+// @Success 200 {object} jsonapi.Response{loginResponse}
 func (h *Router) login(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 	ctx := r.Context()
@@ -104,8 +123,48 @@ func (h *Router) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
+		response := loginResponse{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+		}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(user)
+		json.NewEncoder(w).Encode(response)
+	}
+}
+
+type getUserResponse struct {
+	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
+	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
+	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+}
+
+// getUser godoc
+// @Description retreive user data for given email.
+// @Param email query string false "User's email"
+// @Param password query string false "User's password"
+// @Success 200 {object} jsonapi.Response{user.User}
+func (h *Router) getUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	ctx := r.Context()
+
+	vars := mux.Vars(r)
+	email, ok := vars["email"]
+	if !ok {
+		http.Error(w, "user's email needed", http.StatusBadRequest)
 	}
 
+	user, err := h.userService.GetUser(ctx, email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		response := getUserResponse{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
+	}
 }
