@@ -31,6 +31,16 @@ func NewService(pldService pld.Service, userRepo Repository) (*Service, error) {
 
 // CreateUser stores given user in users repository if valid, error otherwise
 func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
+	if user.FirstName == "" {
+		return nil, fmt.Errorf("user's first name should not be empty")
+	}
+	if user.LastName == "" {
+		return nil, fmt.Errorf("user's last name should not be empty")
+	}
+	if user.Email == "" {
+		return nil, fmt.Errorf("user's email should not be empty")
+	}
+
 	pldErr := s.pldService.CheckBlacklist(
 		ctx,
 		pld.Request{

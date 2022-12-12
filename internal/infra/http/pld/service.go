@@ -1,7 +1,6 @@
 package pld
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,18 +11,30 @@ import (
 	"github.com/alamrios/crabi-solution/internal/app/pld"
 )
 
+type HttpClient interface {
+	Post(URL string, data []byte, contentType string) (*http.Response, error)
+}
+
 // Service struct for PLD service
 type Service struct {
-	URL string
+	URL        string
+	httpClient HttpClient
 }
 
 // NewService PLD service constructor
-func NewService(cfg *config.PLD) (*Service, error) {
-	service := &Service{
-		URL: cfg.Protocol + cfg.Host + ":" + cfg.Port + cfg.URI,
+func NewService(cfg *config.PLD, httpClient HttpClient) (*Service, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("pld config is nil")
 	}
 
-	return service, nil
+	if httpClient == nil {
+		return nil, fmt.Errorf("http client is nil")
+	}
+
+	return &Service{
+		URL:        cfg.Protocol + cfg.Host + ":" + cfg.Port + cfg.URI,
+		httpClient: httpClient,
+	}, nil
 }
 
 // CheckBlacklistRequest struct for CheckBlacklist request
@@ -46,17 +57,18 @@ func (s *Service) CheckBlacklist(ctx context.Context, request pld.Request) error
 		LastName:  request.LastName,
 		Email:     request.Email,
 	}
-	jsonData, err := json.Marshal(requestBody)
+
+	data, err := json.Marshal(requestBody)
 	if err != nil {
 		return err
 	}
 
-	contentType := "application/json"
-	bytesBuffer := bytes.NewBuffer(jsonData)
-	response, err := http.Post(s.URL, contentType, bytesBuffer)
+	response, err := s.httpClient.Post(s.URL, data, "application/json")
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(response)
 
 	if response.StatusCode != 201 {
 		return fmt.Errorf("pld server returned %d status code", response.StatusCode)
