@@ -378,3 +378,95 @@ func TestLogin(t *testing.T) {
 		})
 	}
 }
+
+func TestGetUser(t *testing.T) {
+	email1 := "dua@lipa.com"
+
+	user1 := &user.User{
+		FirstName: "Dua",
+		LastName:  "Lipa",
+		Email:     "dua@lipa.com",
+		Password:  "dua123lipa",
+	}
+
+	testCases := map[string]struct {
+		email         string
+		userRepoCalls []tmock.Call
+		expectedError error
+	}{
+		"success": {
+			email: email1,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmail",
+					Params: []interface{}{
+						email1,
+					},
+					Returns: []interface{}{
+						user1,
+						nil,
+					},
+				},
+			},
+		},
+		"empty email should return error": {
+			expectedError: fmt.Errorf("user's email should not be empty"),
+		},
+		"user repo error should propagate": {
+			email: email1,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmail",
+					Params: []interface{}{
+						email1,
+					},
+					Returns: []interface{}{
+						(*user.User)(nil),
+						fmt.Errorf("user repo error"),
+					},
+				},
+			},
+			expectedError: fmt.Errorf("user repo error"),
+		},
+		"user not found should return error": {
+			email: email1,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmail",
+					Params: []interface{}{
+						email1,
+					},
+					Returns: []interface{}{
+						(*user.User)(nil),
+						nil,
+					},
+				},
+			},
+			expectedError: fmt.Errorf("user not exists"),
+		},
+	}
+
+	for name, tc := range testCases {
+		ctx := context.Background()
+		pldService := tmock.NewPLDService()
+		userRepo := tmock.NewUserRepository().AddCall(t, tc.userRepoCalls)
+
+		userService, err := user.NewService(pldService, userRepo)
+		assert.NoError(t, err)
+
+		email := tc.email
+		expectedError := tc.expectedError
+
+		t.Run(name, func(t *testing.T) {
+			got, err := userService.GetUser(ctx, email)
+
+			if expectedError == nil {
+				assert.NotNil(t, got)
+				assert.NoError(t, err)
+			} else {
+				assert.Equal(t, expectedError, err)
+				assert.Nil(t, got)
+			}
+		})
+	}
+}
