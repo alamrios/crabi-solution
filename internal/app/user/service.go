@@ -40,6 +40,9 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 	if user.Email == "" {
 		return nil, fmt.Errorf("user's email should not be empty")
 	}
+	if user.Password == "" {
+		return nil, fmt.Errorf("user's password should not be empty")
+	}
 
 	pldErr := s.pldService.CheckBlacklist(
 		ctx,
@@ -67,4 +70,24 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (s *Service) Login(ctx context.Context, email, password string) (*User, error) {
+	if email == "" {
+		return nil, fmt.Errorf("user's email should not be empty")
+	}
+	if password == "" {
+		return nil, fmt.Errorf("user's password should not be empty")
+	}
+
+	user, err := s.userRepo.GetUserByEmailAndPassword(ctx, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, fmt.Errorf("user not exists or invalid credentials")
+	}
+
+	return user, nil
 }

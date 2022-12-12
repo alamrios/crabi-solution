@@ -13,6 +13,7 @@ import (
 
 type userService interface {
 	CreateUser(ctx context.Context, user user.User) (*user.User, error)
+	Login(ctx context.Context, email, password string) (*user.User, error)
 }
 
 // Router infraestructure
@@ -34,6 +35,7 @@ func New(userService userService) (*Router, error) {
 // AppendRoutes adds all func handlers
 func (h *Router) AppendRoutes(rb *mux.Router) {
 	rb.HandleFunc("/api/v1/users/", h.createUser).Methods("POST")
+	rb.HandleFunc("/api/v1/login/", h.login).Methods("POST")
 }
 
 func enableCors(w *http.ResponseWriter) {
@@ -54,6 +56,7 @@ type createUserRequest struct {
 // @Param first_name query string false "User's first name"
 // @Param last_name query string false "User's last name"
 // @Param email query string false "User's email"
+// @Param password query string false "User's password"
 // @Success 200 {object} jsonapi.Response{user.User}
 func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -76,4 +79,33 @@ func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(user)
 	}
+}
+
+type loginRequest struct {
+	Email    string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+	Password string `json:"password" validate:"required" example:"joaquin123"`
+}
+
+// login godoc
+// @Description User login.
+// @Param email query string false "User's email"
+// @Param password query string false "User's password"
+// @Success 200 {object} jsonapi.Response{user.User}
+func (h *Router) login(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	ctx := r.Context()
+
+	var request loginRequest
+	var err error
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(reqBody, &request)
+
+	user, err := h.userService.Login(ctx, request.Email, request.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(user)
+	}
+
 }

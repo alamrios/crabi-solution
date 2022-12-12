@@ -60,3 +60,27 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*user.Us
 
 	return &user, nil
 }
+
+func (r *Repository) GetUserByEmailAndPassword(ctx context.Context, email, password string) (*user.User, error) {
+	collection := r.mongoDB.Collection(ResourceCollection)
+
+	query := collection.FindOne(
+		ctx,
+		bson.M{
+			"email":    email,
+			"password": password,
+		},
+	)
+
+	if query.Err() == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+
+	var user user.User
+	err := query.Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

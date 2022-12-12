@@ -42,3 +42,8 @@ func (m *UserRepository) GetUserByEmail(_ context.Context, email string) (*user.
 	args := m.Called(email)
 	return args.Get(0).(*user.User), args.Error(1)
 }
+
+func (m *UserRepository) GetUserByEmailAndPassword(_ context.Context, email, password string) (*user.User, error) {
+	args := m.Called(email, password)
+	return args.Get(0).(*user.User), args.Error(1)
+}
