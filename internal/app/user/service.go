@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 
 	pld "github.com/alamrios/crabi-solution/internal/app/pld"
@@ -64,6 +66,9 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 		return nil, fmt.Errorf("user with email %s already exists", user.Email)
 	}
 
+	hash := sha256.Sum256([]byte(user.Password))
+	user.Password = hex.EncodeToString(hash[:])
+
 	rErr := s.userRepo.SaveUser(ctx, user)
 	if rErr != nil {
 		return nil, rErr
@@ -81,7 +86,10 @@ func (s *Service) Login(ctx context.Context, email, password string) (*User, err
 		return nil, fmt.Errorf("user's password should not be empty")
 	}
 
-	user, err := s.userRepo.GetUserByEmailAndPassword(ctx, email, password)
+	hash := sha256.Sum256([]byte(password))
+	ePassword := hex.EncodeToString(hash[:])
+
+	user, err := s.userRepo.GetUserByEmailAndPassword(ctx, email, ePassword)
 	if err != nil {
 		return nil, err
 	}

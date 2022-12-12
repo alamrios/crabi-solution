@@ -2,6 +2,8 @@ package user_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -53,11 +55,20 @@ func TestCreateUser(t *testing.T) {
 		Password:  "dua123lipa",
 	}
 
+	hash := sha256.Sum256([]byte(input1.Password))
+	ePassword := hex.EncodeToString(hash[:])
+
+	input1e := user.User{
+		FirstName: "Dua",
+		LastName:  "Lipa",
+		Email:     "dua@lipa.com",
+		Password:  ePassword,
+	}
+
 	testCases := map[string]struct {
 		input           user.User
 		pldServiceCalls []tmock.Call
 		userRepoCalls   []tmock.Call
-		expectedResult  *user.User
 		expectedError   error
 	}{
 		"success": {
@@ -91,15 +102,14 @@ func TestCreateUser(t *testing.T) {
 				{
 					FunctionName: "SaveUser",
 					Params: []interface{}{
-						input1,
+						input1e,
 					},
 					Returns: []interface{}{
 						nil,
 					},
 				},
 			},
-			expectedResult: &input1,
-			expectedError:  nil,
+			expectedError: nil,
 		},
 		"empty first name should return error": {
 			input:         user.User{},
@@ -238,7 +248,7 @@ func TestCreateUser(t *testing.T) {
 				{
 					FunctionName: "SaveUser",
 					Params: []interface{}{
-						input1,
+						input1e,
 					},
 					Returns: []interface{}{
 						fmt.Errorf("user repository error"),
@@ -258,13 +268,18 @@ func TestCreateUser(t *testing.T) {
 		assert.NoError(t, err)
 
 		input := tc.input
-		expectedResult := tc.expectedResult
 		expectedError := tc.expectedError
 
 		t.Run(name, func(t *testing.T) {
 			got, err := userService.CreateUser(ctx, input)
-			assert.Equal(t, expectedResult, got)
-			assert.Equal(t, expectedError, err)
+
+			if expectedError == nil {
+				assert.NotNil(t, got)
+				assert.NoError(t, err)
+			} else {
+				assert.Equal(t, expectedError, err)
+				assert.Nil(t, got)
+			}
 		})
 	}
 }
@@ -285,6 +300,9 @@ func TestLogin(t *testing.T) {
 		Password:  "dua123lipa",
 	}
 
+	hash := sha256.Sum256([]byte(params1.password))
+	ePassword := hex.EncodeToString(hash[:])
+
 	testCases := map[string]struct {
 		email         string
 		password      string
@@ -299,7 +317,7 @@ func TestLogin(t *testing.T) {
 					FunctionName: "GetUserByEmailAndPassword",
 					Params: []interface{}{
 						params1.email,
-						params1.password,
+						ePassword,
 					},
 					Returns: []interface{}{
 						user1,
@@ -323,7 +341,7 @@ func TestLogin(t *testing.T) {
 					FunctionName: "GetUserByEmailAndPassword",
 					Params: []interface{}{
 						params1.email,
-						params1.password,
+						ePassword,
 					},
 					Returns: []interface{}{
 						(*user.User)(nil),
@@ -341,7 +359,7 @@ func TestLogin(t *testing.T) {
 					FunctionName: "GetUserByEmailAndPassword",
 					Params: []interface{}{
 						params1.email,
-						params1.password,
+						ePassword,
 					},
 					Returns: []interface{}{
 						(*user.User)(nil),
