@@ -101,6 +101,31 @@ func TestCreateUser(t *testing.T) {
 			expectedResult: &input1,
 			expectedError:  nil,
 		},
+		"empty first name should return error": {
+			input:         user.User{},
+			expectedError: fmt.Errorf("user's first name should not be empty"),
+		},
+		"empty last name should return error": {
+			input: user.User{
+				FirstName: "Dua",
+			},
+			expectedError: fmt.Errorf("user's last name should not be empty"),
+		},
+		"empty email should return error": {
+			input: user.User{
+				FirstName: "Dua",
+				LastName:  "Lipa",
+			},
+			expectedError: fmt.Errorf("user's email should not be empty"),
+		},
+		"empty password should return error": {
+			input: user.User{
+				FirstName: "Dua",
+				LastName:  "Lipa",
+				Email:     "dua@lipa.com",
+			},
+			expectedError: fmt.Errorf("user's password should not be empty"),
+		},
 		"pld error should propagate": {
 			input: input1,
 			pldServiceCalls: []tmock.Call{
@@ -240,6 +265,116 @@ func TestCreateUser(t *testing.T) {
 			got, err := userService.CreateUser(ctx, input)
 			assert.Equal(t, expectedResult, got)
 			assert.Equal(t, expectedError, err)
+		})
+	}
+}
+
+func TestLogin(t *testing.T) {
+	params1 := struct {
+		email    string
+		password string
+	}{
+		email:    "dua@lipa.com",
+		password: "dua123lipa",
+	}
+
+	user1 := &user.User{
+		FirstName: "Dua",
+		LastName:  "Lipa",
+		Email:     "dua@lipa.com",
+		Password:  "dua123lipa",
+	}
+
+	testCases := map[string]struct {
+		email         string
+		password      string
+		userRepoCalls []tmock.Call
+		expectedError error
+	}{
+		"success": {
+			email:    params1.email,
+			password: params1.password,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmailAndPassword",
+					Params: []interface{}{
+						params1.email,
+						params1.password,
+					},
+					Returns: []interface{}{
+						user1,
+						nil,
+					},
+				},
+			},
+		},
+		"empty email should return error": {
+			expectedError: fmt.Errorf("user's email should not be empty"),
+		},
+		"empty password should return error": {
+			email:         params1.email,
+			expectedError: fmt.Errorf("user's password should not be empty"),
+		},
+		"user repo error should propagate": {
+			email:    params1.email,
+			password: params1.password,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmailAndPassword",
+					Params: []interface{}{
+						params1.email,
+						params1.password,
+					},
+					Returns: []interface{}{
+						(*user.User)(nil),
+						fmt.Errorf("user repo error"),
+					},
+				},
+			},
+			expectedError: fmt.Errorf("user repo error"),
+		},
+		"user not found should return error": {
+			email:    params1.email,
+			password: params1.password,
+			userRepoCalls: []tmock.Call{
+				{
+					FunctionName: "GetUserByEmailAndPassword",
+					Params: []interface{}{
+						params1.email,
+						params1.password,
+					},
+					Returns: []interface{}{
+						(*user.User)(nil),
+						nil,
+					},
+				},
+			},
+			expectedError: fmt.Errorf("user not exists or invalid credentials"),
+		},
+	}
+
+	for name, tc := range testCases {
+		ctx := context.Background()
+		pldService := tmock.NewPLDService()
+		userRepo := tmock.NewUserRepository().AddCall(t, tc.userRepoCalls)
+
+		userService, err := user.NewService(pldService, userRepo)
+		assert.NoError(t, err)
+
+		email := tc.email
+		password := tc.password
+		expectedError := tc.expectedError
+
+		t.Run(name, func(t *testing.T) {
+			got, err := userService.Login(ctx, email, password)
+
+			if expectedError == nil {
+				assert.NotNil(t, got)
+				assert.NoError(t, err)
+			} else {
+				assert.Equal(t, expectedError, err)
+				assert.Nil(t, got)
+			}
 		})
 	}
 }
