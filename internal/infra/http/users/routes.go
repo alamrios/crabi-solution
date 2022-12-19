@@ -89,8 +89,16 @@ func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 			LastName:  user.LastName,
 			Email:     user.Email,
 		}
+
+		payload, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response)
+		w.Write(payload)
 	}
 }
 
@@ -128,8 +136,16 @@ func (h *Router) login(w http.ResponseWriter, r *http.Request) {
 			LastName:  user.LastName,
 			Email:     user.Email,
 		}
+
+		payload, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		w.Write(payload)
 	}
 }
 
@@ -164,7 +180,14 @@ func (h *Router) getUser(w http.ResponseWriter, r *http.Request) {
 			Email:     user.Email,
 		}
 
+		payload, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		w.Write(payload)
 	}
 }
