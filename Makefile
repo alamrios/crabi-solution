@@ -10,3 +10,6 @@ test:
 	go test -cover \
 	./internal/app/user \
 	./internal/infra/http/pld
+
+proto-compile:
+	protoc --proto_path=proto/ pld/v1/pld.proto --go_out=proto/pld --go-grpc_out=proto/pld

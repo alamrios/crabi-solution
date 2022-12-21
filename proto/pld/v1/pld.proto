@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pld;
 
-option go_package = "./pld";
+option go_package = "./";
 
 service PldService {
   rpc CheckInBlacklist (CheckInBlackListReq) returns (CheckInBlackListRes) {}

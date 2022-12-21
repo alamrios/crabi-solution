@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.12
-// source: pld.proto
+// source: pld/v1/pld.proto
 
 package pld
 
@@ -101,5 +101,5 @@ var PldService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pld.proto",
+	Metadata: "pld/v1/pld.proto",
 }

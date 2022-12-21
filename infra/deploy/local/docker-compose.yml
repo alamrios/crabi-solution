@@ -43,6 +43,7 @@ services:
     image: vligascrabi/crabi-pld-test:v1
     ports:
       - "3000:3000"
+      - "5000:5000"
     networks:
       - crabi-solution
 
