@@ -30,6 +30,7 @@ type PLD struct {
 	URI      string
 }
 
+// JWT struct for jwt authentication
 type JWT struct {
 	SecretKey string
 }

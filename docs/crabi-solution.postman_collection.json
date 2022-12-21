@@ -38,7 +38,13 @@
 			"name": "Create Chapo user",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImR1YUBsaXBhLmNvbSIsImV4cGlyZSI6MTY3MTU4NDA5OX0.MTi6vPDpNdskJsGI4RPGXt4Hs18UKQBWNQVzfbkz3I0",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"first_name\": \"Joaquin\",\n  \"last_name\": \"Guzman\",\n  \"email\": \"joaquin@guzman.com\",\n  \"password\": \"alamrios\"\n}",
@@ -68,7 +74,13 @@
 			"name": "Create user",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImR1YUBsaXBhLmNvbSIsImV4cGlyZSI6MTY3MTU4NDA5OX0.MTi6vPDpNdskJsGI4RPGXt4Hs18UKQBWNQVzfbkz3I0",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"first_name\": \"Dua\",\n  \"last_name\": \"Lipa\",\n  \"email\": \"dua@lipa.com\",\n  \"password\": \"dua123lipa\"\n}",
@@ -128,7 +140,13 @@
 			"name": "Get user",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImR1YUBsaXBhLmNvbSIsImV4cGlyZSI6MTY3MTU4NDA5OX0.MTi6vPDpNdskJsGI4RPGXt4Hs18UKQBWNQVzfbkz3I0",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "localhost:8080/api/v1/users/dua@lipa.com",
 					"host": [

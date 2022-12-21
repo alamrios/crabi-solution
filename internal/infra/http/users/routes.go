@@ -57,19 +57,6 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Methods", "GET, DELETE, PUT, POST, OPTIONS")
 }
 
-type createUserRequest struct {
-	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
-	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
-	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
-	Password  string `json:"password" validate:"required" example:"joaquin123"`
-}
-
-type createUserResponse struct {
-	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
-	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
-	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
-}
-
 func (h *Router) verifyJWT(handler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header["Token"] != nil {
@@ -114,6 +101,19 @@ func (h *Router) generateJWT(email string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+type createUserRequest struct {
+	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
+	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
+	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+	Password  string `json:"password" validate:"required" example:"joaquin123"`
+}
+
+type createUserResponse struct {
+	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
+	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
+	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
 }
 
 // createUser godoc

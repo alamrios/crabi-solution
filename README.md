@@ -23,6 +23,7 @@ Algunos datos importantes sobre el funcionamiento del proyecto:
 ## API
 El contenedor crabi-solution-dev expone los siguientes endpoints:
 ### `/api/v1/users/ [POST]`
+Endpoint protegido, se debe de enviar Token en Header.
 Para crear usuarios, espera un json con el siguiente formato:
 ```json
 {
@@ -30,6 +31,14 @@ Para crear usuarios, espera un json con el siguiente formato:
   "last_name": string,
   "email": string,
   "password": string
+}
+```
+Devuelve un json con el siguiente formato:
+```json
+{
+  "first_name": string,
+  "last_name": string,
+  "email": string
 }
 ```
 ### `/api/v1/login/ [POST]`
@@ -40,8 +49,26 @@ Para autenticación de los usuarios, espera un json con el siguiente formato:
   "password": string
 }
 ```
+Devuelve un json con el siguiente formato:
+```json
+{
+  "first_name": string,
+  "last_name": string,
+  "email": string
+}
+```
 ### `/api/v1/users/{email} [GET]`
+Endpoint protegido, se debe de enviar Token en Header.
 Para consultar los datos de un usuario mediante su email, espera el *email* del usuario como parámetro en la solicitud.
+
+Devuelve un json con el siguiente formato:
+```json
+{
+  "first_name": string,
+  "last_name": string,
+  "email": string
+}
+```
 
 ## Postman
 En el repositorio se incluye una colección de Postman para probar los endpoints expuestos por el servicio.
