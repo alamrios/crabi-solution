@@ -5,8 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"time"
 
+	"github.com/golang-jwt/jwt"
+
+	"github.com/alamrios/crabi-solution/config"
 	"github.com/alamrios/crabi-solution/internal/app/user"
 	"github.com/gorilla/mux"
 )
@@ -20,23 +25,29 @@ type userService interface {
 // Router infraestructure
 type Router struct {
 	userService userService
+	secretKey   []byte
 }
 
 // New Router constructor
-func New(userService userService) (*Router, error) {
+func New(userService userService, config *config.JWT) (*Router, error) {
 	if userService == nil {
 		return nil, fmt.Errorf("user service is nil")
 	}
 
+	if config == nil {
+		return nil, fmt.Errorf("jwt config is nil")
+	}
+
 	return &Router{
 		userService: userService,
+		secretKey:   []byte(config.SecretKey),
 	}, nil
 }
 
 // AppendRoutes adds all func handlers
 func (h *Router) AppendRoutes(rb *mux.Router) {
-	rb.HandleFunc("/api/v1/users/", h.createUser).Methods("POST")
-	rb.HandleFunc("/api/v1/users/{email}", h.getUser).Methods("GET")
+	rb.HandleFunc("/api/v1/users/", h.verifyJWT(h.createUser)).Methods("POST")
+	rb.HandleFunc("/api/v1/users/{email}", h.verifyJWT(h.getUser)).Methods("GET")
 	rb.HandleFunc("/api/v1/login/", h.login).Methods("POST")
 }
 
@@ -57,6 +68,52 @@ type createUserResponse struct {
 	FirstName string `json:"first_name" validate:"required" example:"Joaquin"`
 	LastName  string `json:"last_name" validate:"required" example:"Guzman"`
 	Email     string `json:"email" validate:"required" example:"joaquin@guzman.com"`
+}
+
+func (h *Router) verifyJWT(handler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header["Token"] != nil {
+			token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
+				_, ok := token.Method.(*jwt.SigningMethodHMAC)
+				if !ok {
+					return nil, fmt.Errorf("signing method error")
+				}
+				return h.secretKey, nil
+			})
+			if err != nil {
+				log.Println("error while jwt parse: ", err)
+				errMsg := "you're Unauthorized due to error parsing the JWT"
+				http.Error(w, errMsg, http.StatusUnauthorized)
+				return
+			}
+
+			if token.Valid {
+				handler(w, r)
+			} else {
+				errMsg := "you're Unauthorized due to invalid token"
+				http.Error(w, errMsg, http.StatusUnauthorized)
+				return
+			}
+		} else { // response for request.Header["Token"] == nil
+			errMsg := "you're Unauthorized due to No token in the header"
+			http.Error(w, errMsg, http.StatusUnauthorized)
+			return
+		}
+	})
+}
+
+func (h *Router) generateJWT(email string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email":  email,
+		"expire": time.Now().Add(time.Hour * time.Duration(1)).Unix(),
+	})
+
+	tokenString, err := token.SignedString(h.secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 // createUser godoc
@@ -95,7 +152,7 @@ func (h *Router) createUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(payload)
@@ -142,7 +199,14 @@ func (h *Router) login(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		
+
+		token, err := h.generateJWT(user.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Token", token)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(payload)
@@ -185,7 +249,7 @@ func (h *Router) getUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(payload)

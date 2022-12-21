@@ -52,7 +52,7 @@ func main() {
 		log.Fatalf("failed to setup user service: %v", err)
 	}
 
-	usersRouter, err := userRouter.New(userService)
+	usersRouter, err := userRouter.New(userService, &cfg.JWT)
 	if err != nil {
 		log.Fatalf("failed to setup user router: %v", err)
 	}

@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Mongo Mongo
 	PLD   PLD
+	JWT   JWT
 }
 
 // Mongo struct for mongodb connection
@@ -27,6 +28,10 @@ type PLD struct {
 	Host     string
 	Port     string
 	URI      string
+}
+
+type JWT struct {
+	SecretKey string
 }
 
 // New returns config instance with values
@@ -75,8 +80,17 @@ func New(ctx context.Context) (*Config, error) {
 		return nil, fmt.Errorf("PLD_URI env var needed")
 	}
 
+	jwt := JWT{
+		SecretKey: os.Getenv("JWT_SECRET_KEY"),
+	}
+
+	if jwt.SecretKey == "" {
+		return nil, fmt.Errorf("JWT_SECRET_KEY env var needed")
+	}
+
 	return &Config{
 		Mongo: mongo,
 		PLD:   pld,
+		JWT:   jwt,
 	}, nil
 }

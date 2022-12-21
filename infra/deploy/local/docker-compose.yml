@@ -20,6 +20,7 @@ services:
       PLD_HOST: "crabi-pld"
       PLD_PORT: "3000"
       PLD_URI: "/check-blacklist"
+      JWT_SECRET_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
     ports:
       - "8080:8080"
     networks:
