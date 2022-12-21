@@ -16,10 +16,10 @@ services:
       MONGO_DATABASE: "crabi-solution"
       MONGO_USER: "crabiuser"
       MONGO_PASSWORD: "crabipass"
-      PLD_PROTOCOL: "http://"
+      PLD_PROTOCOL: "unused"
       PLD_HOST: "crabi-pld"
-      PLD_PORT: "3000"
-      PLD_URI: "/check-blacklist"
+      PLD_PORT: "5000"
+      PLD_URI: "unused"
       JWT_SECRET_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
     ports:
       - "8080:8080"
@@ -43,6 +43,7 @@ services:
     image: vligascrabi/crabi-pld-test:v1
     ports:
       - "3000:3000"
+      - "5000:5000"
     networks:
       - crabi-solution
 

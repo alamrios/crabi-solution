@@ -22,7 +22,7 @@ type Mongo struct {
 	Password string
 }
 
-// PLD struct for PLD service connectino
+// PLD struct for PLD service connection
 type PLD struct {
 	Protocol string
 	Host     string

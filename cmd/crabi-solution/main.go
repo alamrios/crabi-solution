@@ -11,8 +11,7 @@ import (
 
 	"github.com/alamrios/crabi-solution/config"
 	"github.com/alamrios/crabi-solution/internal/app/user"
-	chttp "github.com/alamrios/crabi-solution/internal/infra/http"
-	"github.com/alamrios/crabi-solution/internal/infra/http/pld"
+	"github.com/alamrios/crabi-solution/internal/infra/grcp/pld"
 	userRouter "github.com/alamrios/crabi-solution/internal/infra/http/users"
 	"github.com/alamrios/crabi-solution/internal/infra/repository/mongo"
 	userRepo "github.com/alamrios/crabi-solution/internal/infra/repository/mongo/user"
@@ -32,12 +31,7 @@ func main() {
 		log.Fatalf("failed to setup mongoDB client: %v", err)
 	}
 
-	httpClient, err := chttp.NewClient()
-	if err != nil {
-		log.Fatalf("failed to setup http client: %v", err)
-	}
-
-	pldService, err := pld.NewService(&cfg.PLD, httpClient)
+	pldService, err := pld.NewService(&cfg.PLD)
 	if err != nil {
 		log.Fatalf("failed to setup pld client: %v", err)
 	}
